@@ -18,6 +18,9 @@ public class UrlService {
 
     private URLRepository repository;
 
+    /*
+     * Will Short the url and store the url data with expiry date *
+     */
     public Object shortenUrl(String urlRequest) {
         var result = validateURL(urlRequest);
         if (!(result instanceof String)) {
@@ -32,14 +35,16 @@ public class UrlService {
         return urlMapping;
     }
 
-
-    // Will return url String or Invlid URL object
+    /*
+     * Will return url String or Invlid URL object, 
+     * checking url contains http or not if not then adding it and validating is url is valid or not if yes then returning the valid url
+     */
     public Object validateURL(String urlRequest) {
         if (urlRequest.startsWith("http://") || urlRequest.startsWith("https://")) {
             if (!isUrlAvailable(urlRequest)) {
                 return invalidURL();
             }
-        } else {
+        } else { 
             String httpUrl = "http://" + urlRequest;
             String httpsUrl = "https://" + urlRequest;
             if (isUrlAvailable(httpsUrl)) {
@@ -53,12 +58,18 @@ public class UrlService {
         return urlRequest;
     }
 
+    /*
+     * When the URL inlivad return response
+     */
     private Object invalidURL() {
         record errorRestponse(String message, int status) {
         }
         return new errorRestponse("Invalid URL", 400);
     }
 
+    /*
+     * Validating the url by connecting to internet
+     */
     private boolean isUrlAvailable(String url) {
         try {
             java.net.URL urlObject = new URI(url).toURL();
@@ -71,6 +82,9 @@ public class UrlService {
         }
     }
 
+    /*
+     * will return the original URL of the short URL
+     */
     public String getOriginalUrl(String shortUrl) {
         URL urlMapping = repository.findByShortUrl(shortUrl)
                 .orElseThrow(() -> new NoSuchElementException("URL not found"));
@@ -80,6 +94,9 @@ public class UrlService {
         return urlMapping.getOriginalUrl();
     }
 
+    /*
+     * Find the url data and update the redirect url to new url of the short url
+     */
     public URL updateShortUrl(String shortUrl, String newOriginalUrl) {
         URL urlMapping = repository.findByShortUrl(shortUrl)
                 .orElseThrow(() -> new NoSuchElementException("URL not found"));
@@ -88,6 +105,9 @@ public class UrlService {
         return urlMapping;
     }
 
+    /*
+     * update the expiry date of the shor url
+     */
     public boolean updateExpiry(String shortUrl, int daysToAdd) {
         URL urlMapping = repository.findByShortUrl(shortUrl)
                 .orElseThrow(() -> new NoSuchElementException("URL not found"));
@@ -96,10 +116,15 @@ public class UrlService {
         return true;
     }
 
+    /*
+     * 
+     * Implement a URL shortening algorithm, e.g., Base62 encoding of a sequence or
+     * a UUID.
+     * Ensure the generated URL is unique.
+     * 
+     */
     private String generateShortUrl() {
-        // Implement a URL shortening algorithm, e.g., Base62 encoding of a sequence or
-        // a UUID.
-        // Ensure the generated URL is unique.
+
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         StringBuilder shortUrl = new StringBuilder();
         for (int i = 0; i < 6; i++) {
